@@ -16,7 +16,7 @@ __version__ = version_line.split('__version__ = ')[-1][1:][:-2]
 setuptools.setup(name = "lrmq",
     version = __version__,
     description = "Low-resource message queue framework",
-    long_description = open("README.rst").read(),
+    long_description = open("README.md").read(),
     #url="http://github.com/RomanKharin/lrmq",
     author = "Roman Kharin",
     author_email = "romiq.kh@gmail.com",
