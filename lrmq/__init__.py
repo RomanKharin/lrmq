@@ -39,6 +39,7 @@ def main(cfg = None):
     
     if not cfg:
         import argparse
+        
         parser = argparse.ArgumentParser()
         parser.add_argument("-c", "--config", 
             help = "Configuration file (json)")
@@ -49,6 +50,8 @@ def main(cfg = None):
         args = parser.parse_args()
 
         if args.config:
+            import json
+            
             with open(args.config, "r") as f:
                 cfg = json.load(f)
         else:
