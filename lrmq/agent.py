@@ -280,7 +280,7 @@ class AgentStdIO(AgentJsonStream):
         self.logger.debug("Process created")
 
     async def recv(self, blen):
-        data = await self.proc.stdout.read(blen)
+        data = await self.proc.stdout.readexactly(blen)
         return data
 
     def send(self, data):
