@@ -55,7 +55,7 @@ class Agent:
 
     async def run(self):
         "Main loop"
-        print("EV", self.ev_msg)
+
         if not self.isloop: raise Exception("Can't rerun")
         try:
             await self.prepare()
