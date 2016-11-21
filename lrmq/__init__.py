@@ -47,6 +47,9 @@ def main(cfg = None):
             help = "Override log level")
         parser.add_argument("-l", "--log", 
             help = "Log filename (default stdout)")
+        parser.add_argument("-t", "--test", nargs = argparse.REMAINDER,
+            help = "Test agent with hub. "\
+            "Remainder is command line for new process")
         args = parser.parse_args()
 
         if args.config:
@@ -56,13 +59,29 @@ def main(cfg = None):
                 cfg = json.load(f)
         else:
             cfg = {}
+
         if args.loglevel:
             try:
                 cfg["loglevel"] = int(args.loglevel, 10)
             except ValueError:
                 cfg["loglevel"] = args.loglevel
+
         if args.log:
             cfg["log"] = args.log
+
+        if args.test:
+            tcmd = args.test[0]
+            if len(args.test) > 1:
+                targs = args.test[1:]
+            else:
+                targs = []
+            cfg["agents"] = [{
+                "type": "stdio",
+                "id": "test",
+                "name": tcmd,
+                "cmd": tcmd,
+                "args": targs
+            }]
 
     hub = Hub()
     hub.load_config(cfg)
