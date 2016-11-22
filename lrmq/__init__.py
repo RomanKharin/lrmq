@@ -69,10 +69,10 @@ def main(cfg = None):
         if args.log:
             cfg["log"] = args.log
 
-        if args.test:
-            tcmd = args.test[0]
-            if len(args.test) > 1:
-                targs = args.test[1:]
+        if args.agent:
+            tcmd = args.agent[0]
+            if len(args.agent) > 1:
+                targs = args.agent[1:]
             else:
                 targs = []
             cfg["agents"] = [{
