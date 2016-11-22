@@ -47,8 +47,8 @@ def main(cfg = None):
             help = "Override log level")
         parser.add_argument("-l", "--log", 
             help = "Log filename (default stdout)")
-        parser.add_argument("-t", "--test", nargs = argparse.REMAINDER,
-            help = "Test agent with hub. "\
+        parser.add_argument("-a", "--agent", nargs = argparse.REMAINDER,
+            help = "Start agent with hub. "\
             "Remainder is command line for new process")
         args = parser.parse_args()
 
