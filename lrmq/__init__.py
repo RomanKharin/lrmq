@@ -31,8 +31,7 @@ assert sys.version_info >= (3, 5, 2), \
     "Python 3.5.2. required for loop.create_future()"
 
 from .hub import Hub
-from .agent import (Agent, AgentJsonStream, AgentStdIO, 
-    AgentSystem, agent_factory)
+from .agent import (Agent, AgentStdIO, AgentSystem, agent_factory)
 
 def main(cfg = None):
     import asyncio

@@ -147,6 +147,15 @@ class AgentIO:
     def init_loop(self, cfg = False):
         "Loop initialization"
     
+        # negotiate protocol
+        protocols = sys.stdin.buffer.readline().strip().split(b"|")
+        if not b"4bj" in protocols:
+            raise Exception("No acceptable protocol (%s)" % \
+                ", ".join([x.decode("utf-8") for x in protocols]))
+        sys.stdout.buffer.write(b"4bj\n")
+        sys.stdout.buffer.flush()
+        
+        # initial exchange
         self.reg_callback(None, self.default_message)
         ans = self.getid_check(cfg = cfg)
         self.myid = ans.get("agentid")

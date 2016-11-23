@@ -28,9 +28,16 @@ import struct
 import logging
 import asyncio
 import re
+import types
 
 class Agent:
     "Base class for all agents"
+
+    protocols = {}
+
+    @classmethod
+    def reg_protocol(cls, label, proto):
+        cls.protocols[label] = proto
 
     def __init__(self, hub, name):
         self.hub = hub
@@ -53,6 +60,24 @@ class Agent:
         self.hub.logger.debug("Prepare agent " + self.name)
         self.send_agent_event("prepare")
 
+    async def negotiate(self):
+        "Negotiate protocol"
+        
+        pr = b"|".join(Agent.protocols.keys()) + b"\n"
+        self.send(pr)
+        await self.flush()
+        # read confirmation
+        sp = (await self.readline()).strip()
+        self.logger.debug("Selected protocol for " + self.name + ": " + 
+            sp.decode("utf-8"))
+        self.select_protocol(Agent.protocols[sp])
+
+    def select_protocol(self, mixin):
+        "Use mixin methods for exchange"
+
+        self.recv_request = types.MethodType(mixin.recv_request, self)
+        self.send_answer = types.MethodType(mixin.send_answer, self)
+
     async def run(self):
         "Main loop"
 
@@ -61,6 +86,14 @@ class Agent:
             await self.prepare()
         except Exception as e:
             self.logger.exception("while preparing")
+            self.isloop = False
+            self.send_agent_event("error")
+            return
+
+        try:
+            await self.negotiate()
+        except Exception as e:
+            self.logger.exception("while negotiate")
             self.isloop = False
             self.send_agent_event("error")
             return
@@ -221,8 +254,8 @@ class AgentSystem(Agent):
         self.logger.debug("Unprocessed message to system " + \
             str(name) + " " + str(msg))
 
-class AgentJsonStream(Agent):
-    "Agent with two-way json protocols"
+class Proto4ByteJson():
+    "4 byte + json protocols"
 
     async def recv_request(self):
         "Receive and parse JSON data from stream"
@@ -244,8 +277,34 @@ class AgentJsonStream(Agent):
         self.send(data)
         await self.flush()
 
+Agent.reg_protocol(b"4bj", Proto4ByteJson)
 
-class AgentStdIO(AgentJsonStream):
+class ProtoNumJson():
+    "Numeric + json protocols"
+
+    async def recv_request(self):
+        "Receive and parse JSON data from stream"
+
+        plen = await self.readline().decode("latin-1").strip()
+        if not plen:
+            return None
+
+        plen = int(plen, 10)
+        data = (await self.recv(plen)).decode("utf-8")
+        return json.loads(data)
+
+    async def send_answer(self, ans):
+        "Format JSON data and send to stream"
+
+        data = json.dumps(ans, ensure_ascii = False)
+        data = data.encode("utf-8")
+        self.send(str(len(data)).encode("latin-1") + b"\n")
+        self.send(data)
+        await self.flush()
+
+Agent.reg_protocol(b"numj", ProtoNumJson)
+
+class AgentStdIO(Agent):
     "Agent connect to scheduler via stdin and stdout with 4b-json protocol"
     def __init__(self, hub, cfg):
         self.cfg = cfg
@@ -280,8 +339,10 @@ class AgentStdIO(AgentJsonStream):
         self.logger.debug("Process created")
 
     async def recv(self, blen):
-        data = await self.proc.stdout.readexactly(blen)
-        return data
+        return await self.proc.stdout.readexactly(blen)
+
+    async def readline(self):
+        return await self.proc.stdout.readline()
 
     def send(self, data):
         return self.proc.stdin.write(data)

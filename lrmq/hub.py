@@ -35,7 +35,9 @@ import logging
 from .agent import AgentSystem, agent_factory
 
 # Agent work scheme:
-#  request-answer, agent is make request, we answer
+#  propose protocols line
+#  agent select one
+#  request-answer, agent make request, we answer
 #  if event subscription requested it uses long polling
 #    in case of cancel event subscription cancel message emitted
 
