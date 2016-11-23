@@ -50,6 +50,8 @@ def main(cfg = None):
         parser.add_argument("-a", "--agent", nargs = argparse.REMAINDER,
             help = "Start agent with hub. "\
             "Remainder is command line for new process")
+        parser.add_argument("-all", "--agent-loglevel",
+            help = "Agent log level (with --agent only)")
         args = parser.parse_args()
 
         if args.config:
@@ -75,13 +77,19 @@ def main(cfg = None):
                 targs = args.agent[1:]
             else:
                 targs = []
-            cfg["agents"] = [{
+            acfg = {
                 "type": "stdio",
                 "id": "test",
                 "name": tcmd,
                 "cmd": tcmd,
                 "args": targs
-            }]
+            }
+            if args.agent_loglevel:
+                try:
+                    acfg["loglevel"] = int(args.agent_loglevel, 10)
+                except ValueError:
+                    acfg["loglevel"] = args.agent_loglevel
+            cfg["agents"] = [acfg]
 
     hub = Hub()
     hub.load_config(cfg)
