@@ -47,7 +47,7 @@ class AgentIO:
         self.msg_def_listener = None # default listener
         self.reqid = 0
         self.wait_req = {} # awaited requests
-        self.wait_ans = {} # awaited requests
+        self.wait_ans = {} # awaited answers
         self.rpc_listeners = {} # function listeners
         self.rpc_def_listener = None # default function listeners
     
