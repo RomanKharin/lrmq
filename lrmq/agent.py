@@ -108,12 +108,19 @@ class Agent:
             self.send_agent_event("error")
             return
 
+        cmd_recv = asyncio.Queue(1)
+        async def receiver():
+            while self.isloop:
+                req = await self.recv_request()
+                if req == "-": 
+                    self.logger.debug("Signal for " + self.name)
+                    self.signal()
+                    continue
+                self.logger.debug("Read " + str(req))
+                await cmd_recv.put(req)
+        recv_task = asyncio.ensure_future(receiver())
         while self.isloop:
-            req = await self.recv_request()
-            if req == "-": 
-                self.logger.debug("Signal for " + self.name)
-                self.signal()
-                continue
+            req = await cmd_recv.get()
             if not req:
                 # stream lost
                 self.logger.debug("Lost agent " + self.name)
@@ -121,7 +128,6 @@ class Agent:
                 self.send_agent_event("lost")
                 self.isloop = False
                 break
-            self.logger.debug("Read " + str(req))
             try:
                 ans = await self.make_answer(req)
             except Exception as e:
@@ -132,6 +138,7 @@ class Agent:
                 ans["id"] = cid
             self.logger.debug("Write " + str(ans))
             await self.send_answer(ans)
+        recv_task.cancel()
         self.logger.debug("Finish agent " + self.name)
         self.hub.logger.debug("Finish agent " + self.name)
         for subid in self.subs:
