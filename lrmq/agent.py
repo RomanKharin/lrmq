@@ -110,8 +110,8 @@ class Agent:
 
         while self.isloop:
             req = await self.recv_request()
-            if req == "": 
-                self.logger.debug("Cancel message waiting " + self.name)
+            if req == "-": 
+                self.logger.debug("Signal for " + self.name)
                 self.signal()
                 continue
             if not req:
