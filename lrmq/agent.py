@@ -68,9 +68,15 @@ class Agent:
         await self.flush()
         # read confirmation
         sp = (await self.readline()).strip()
-        self.logger.debug("Selected protocol for " + self.name + ": " + 
-            sp.decode("utf-8"))
-        self.select_protocol(Agent.protocols[sp])
+        if sp:
+            self.logger.debug("Selected protocol for " + self.name + ": " + \
+                sp.decode("utf-8"))
+            self.select_protocol(Agent.protocols[sp])
+        else:
+            self.isloop = False
+            self.logger.debug("Lost agent channel " + self.name)
+            self.hub.logger.debug("Lost agent channel " + self.name)
+            self.send_agent_event("lost")
 
     def select_protocol(self, mixin):
         "Use mixin methods for exchange"
@@ -90,6 +96,10 @@ class Agent:
             self.send_agent_event("error")
             return
 
+        # report event
+        self.logger.debug("Run agent " + self.name)
+        self.send_agent_event("new")
+
         try:
             await self.negotiate()
         except Exception as e:
@@ -98,9 +108,6 @@ class Agent:
             self.send_agent_event("error")
             return
 
-        self.logger.debug("Run agent " + self.name)
-        # report to hub
-        self.send_agent_event("new")
         while self.isloop:
             req = await self.recv_request()
             if not req:
