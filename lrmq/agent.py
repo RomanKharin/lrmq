@@ -24,6 +24,7 @@
 
 import sys
 import json
+import pickle
 import struct
 import logging
 import asyncio
@@ -273,7 +274,7 @@ class AgentSystem(Agent):
             str(name) + " " + str(msg))
 
 class Proto4ByteJson():
-    "4 byte + json protocols"
+    "4 byte + json protocol"
 
     async def recv_request(self):
         "Receive and parse JSON data from stream"
@@ -297,30 +298,49 @@ class Proto4ByteJson():
 
 Agent.reg_protocol(b"4bj", Proto4ByteJson)
 
-class ProtoNumJson():
-    "Numeric + json protocols"
+class Proto4BytePickle():
+    "4 byte + pickle protocol"
+
+    async def recv_request(self):
+        "Receive and parse pickle data from stream"
+
+        plen = await self.recv(4)
+        if not plen:
+            return None
+
+        plen = struct.unpack("!I", plen)[0]
+        data = (await self.recv(plen)).decode("utf-8")
+        return pickle.loads(data)
+
+    async def send_answer(self, ans):
+        "Format pickle data and send to stream"
+
+        data = pickle.dumps(ans)
+        data = data.encode("utf-8")
+        self.send(struct.pack("!I", len(data)))
+        self.send(data)
+        await self.flush()
+
+Agent.reg_protocol(b"4bp", Proto4BytePickle)
+
+class ProtoJsonNL():
+    "Json + newline protocol"
 
     async def recv_request(self):
         "Receive and parse JSON data from stream"
 
-        plen = await self.readline().decode("latin-1").strip()
-        if not plen:
-            return None
-
-        plen = int(plen, 10)
-        data = (await self.recv(plen)).decode("utf-8")
+        data = (await self.readline()).decode("utf-8")
         return json.loads(data)
 
     async def send_answer(self, ans):
         "Format JSON data and send to stream"
 
-        data = json.dumps(ans, ensure_ascii = False)
+        data = json.dumps(ans, ensure_ascii = False).replace("\n", " ")
         data = data.encode("utf-8")
-        self.send(str(len(data)).encode("latin-1") + b"\n")
-        self.send(data)
+        self.send(data + b"\n")
         await self.flush()
 
-Agent.reg_protocol(b"numj", ProtoNumJson)
+Agent.reg_protocol(b"jnl", ProtoJsonNL)
 
 class AgentStdIO(Agent):
     "Agent connect to scheduler via stdin and stdout with 4b-json protocol"
