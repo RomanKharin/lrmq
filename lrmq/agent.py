@@ -30,6 +30,7 @@ import logging
 import asyncio
 import re
 import types
+import traceback
 
 class Agent:
     "Base class for all agents"
@@ -112,12 +113,19 @@ class Agent:
         cmd_recv = asyncio.Queue(1)
         async def receiver():
             while self.isloop:
-                req = await self.recv_request()
+                try:
+                    req = await self.recv_request()
+                    self.logger.debug("Read " + str(req))
+                except Exception as e:
+                    self.logger.error("Read error " + traceback.format_exc())
+                    req = {"cmd": "!", "msg": repr(e)}
                 if req == "-": 
                     self.logger.debug("Signal for " + self.name)
                     self.signal()
                     continue
-                self.logger.debug("Read " + str(req))
+                if not isinstance(req, dict):
+                    self.logger.error("Reuest error: not a dict")
+                    req = {"cmd": "!", "msg": "Bad command request"}
                 await cmd_recv.put(req)
         recv_task = asyncio.ensure_future(receiver())
         while self.isloop:
@@ -176,8 +184,12 @@ class Agent:
 
     async def make_answer(self, req):
         "Calculate answer"
-
+        
         cmd = req.get("cmd")
+        if cmd == "!": # error in protocol
+            ans = {k: v for k, v in req.items() if k != "cmd"}
+            ans["answer"] = "error"
+            return ans
         if hasattr(self, "cmd_" + cmd):
             return await getattr(self, "cmd_" + cmd)(req)
             return ans
