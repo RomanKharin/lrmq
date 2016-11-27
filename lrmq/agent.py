@@ -79,6 +79,11 @@ class Agent:
             self.logger.debug("Lost agent channel " + self.name)
             self.hub.logger.debug("Lost agent channel " + self.name)
             self.send_agent_event("lost")
+            # collect agent messages
+            while True:
+                data = await self.readline()
+                if not data: break
+                sys.stdout.buffer.write(data)
 
     def select_protocol(self, mixin):
         "Use mixin methods for exchange"
