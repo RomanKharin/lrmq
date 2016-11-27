@@ -29,5 +29,5 @@ import asyncio
 import lrmq
 
 if __name__ == "__main__":
-    lrmq.main()
+    sys.exit(lrmq.main())
 

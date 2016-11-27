@@ -106,5 +106,7 @@ def main(cfg = None):
         loop.run_until_complete(hub.main_loop())
     finally:
         loop.close()
+    
+    return hub.exit_code
 
 

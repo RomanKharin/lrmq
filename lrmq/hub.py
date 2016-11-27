@@ -60,6 +60,7 @@ class Hub:
         self.working_agents = []
         self.stopped_agents = []
         self.id_cnt = 0 # numerate objects
+        self.exit_code = 0
 
         self.main_s = None
         self.is_active = True
@@ -117,8 +118,6 @@ class Hub:
         self.subsmasks = [(mask, subid) for (mask, subid) in self.subsmasks
             if subid != oldsubid]
         del self.subs[oldsubid]
-        #print(self.subsmasks)
-        #print(self.subs)
 
     async def main_loop(self):
         self.logger.info("Start hub")

@@ -121,6 +121,9 @@ class Agent:
                 try:
                     req = await self.recv_request()
                     self.logger.debug("Read " + str(req))
+                except asyncio.CancelledError as e:
+                    self.logger.debug("End stream for " + self.name)
+                    break
                 except Exception as e:
                     self.logger.error("Read error " + traceback.format_exc())
                     req = {"cmd": "!", "msg": repr(e)}
@@ -130,6 +133,9 @@ class Agent:
                     continue
                 if not isinstance(req, dict):
                     self.logger.error("Reuest error: not a dict")
+                    req = {"cmd": "!", "msg": "Bad command request"}
+                if not isinstance(req.get("cmd"), str):
+                    self.logger.error("Reuest error: command is not string")
                     req = {"cmd": "!", "msg": "Bad command request"}
                 await cmd_recv.put(req)
         recv_task = asyncio.ensure_future(receiver())
@@ -266,6 +272,10 @@ class AgentSystem(Agent):
     def __init__(self, hub):
         super().__init__(hub = hub, name = "<system>")
         self.logger = self.hub.logger
+        # subscribe to system/call
+        subid = self.hub.subscribe(mask = re.compile("system/call"), 
+            subscriber = self)
+        self.subs.append(subid)
 
     def getid(self):
         return "<system>"
@@ -287,8 +297,38 @@ class AgentSystem(Agent):
     def push_msg(self, subid, name, msg):
         "Push message to system agent"
 
+        if name == "system/call":
+            # system-based calls
+            msg = msg or {}
+            func = msg.get("fn")
+            args = msg.get("args")
+            reqid = msg.get("reqid")
+            sender = msg.get("from")
+            try:
+                if hasattr(self, "sysrpc_" + func):
+                    ret = getattr(self, "sysrpc_" + func)(func, 
+                        args, sender)
+                    ans = {"answer": "ok", "ret": ret}
+                else:
+                    ans = {"answer": "error", "msg": "No function %s" % \
+                        repr(func)}
+            except Exception as e:
+                traceback.print_exc()
+                ans = {"answer": "error", "msg": repr(e)}
+            if reqid is not None:
+                ans["reqid"] = reqid
+            self.hub.push_msg(sender + "/ret", ans)
+            return
+
         self.logger.debug("Unprocessed message to system " + \
             str(name) + " " + str(msg))
+
+    def sysrpc_exit_code(self, func, args, sender):
+        "Set hub exit code"
+    
+        self.hub.logger.debug("Agent " + sender + " set exit code to " + \
+            repr(args))
+        self.hub.exit_code = args
 
 class Proto4ByteJson():
     "4 byte + json protocol"
