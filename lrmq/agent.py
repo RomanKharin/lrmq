@@ -31,6 +31,7 @@ import asyncio
 import re
 import types
 import traceback
+import datetime
 
 class Agent:
     "Base class for all agents"
@@ -181,11 +182,16 @@ class Agent:
         if self.q_s is not None:
             self.q_s.set_result(True)
 
-    def push_msg(self, subid, name, msg):
+    def push_msg(self, name, msg = None, opts = None):
         "Push message to queue"
 
-        self.logger.debug("Message " + name + " " + str(msg))
-        self.q.append((subid, name, msg))
+        self.logger.debug("Message " + name + " " + str(msg) + " " + str(opts))
+        until = None
+        if opts:
+            ttl = opts.get("ttl")
+            if ttl:
+                until = datetime.datetime.now() + datetime.timedelta(ttl)
+        self.q.append((name, msg, opts, until))
         self.signal()
 
     def getid(self):
@@ -238,18 +244,29 @@ class Agent:
         "Get new messages. Wait if necessary"
 
         def getpart():
-            part = self.q[:10]
-            self.q = self.q[10:]
+            part = []
+            now = datetime.datetime.now()
+            while len(self.q):
+                name, msg, opts, until = self.q.pop(0)
+                if until <= now:
+                    # remove message
+                    self.hub.removed_msg(name, msg, opts)
+                    continue
+                part.append((name, msg, opts))
+                if len(part) >= 10: break
+            return part
+        def answer(part):
             return {"answer": "ok", "msg": part, "empty": len(self.q) == 0}
-        if self.q:
-            return getpart()
+        q = getpart()
+        if q:
+            return answer(q) 
         try:
-            if not self.q and req.get("block"):
+            if not q and req.get("block"):
                 # wait for new messages
                 self.q_s = self.hub.loop.create_future()
                 await self.q_s
                 self.q_s = None
-            return getpart()
+            return answer(getpart())
         except Exception as e:
             return {"answer": "error", "msg": str(e)}
 
@@ -261,9 +278,8 @@ class Agent:
         return {"answer": "ok"}
 
     async def cmd_push(self, req):
-        name = req.get("name")
-        msg = req.get("msg")
-        self.hub.push_msg(name, msg)
+        self.hub.push_msg(name = req.get("name"), msg = req.get("msg"), 
+            opts = req.get("opts"))
         return {"answer": "ok"}
 
 class AgentSystem(Agent):
@@ -294,7 +310,7 @@ class AgentSystem(Agent):
         if pulse:
             pulse.cancel()
 
-    def push_msg(self, subid, name, msg):
+    def push_msg(self, name, msg = None, opts = None):
         "Push message to system agent"
 
         if name == "system/call":
@@ -321,7 +337,7 @@ class AgentSystem(Agent):
             return
 
         self.logger.debug("Unprocessed message to system " + \
-            str(name) + " " + str(msg))
+            str(name) + " " + str(msg) + " " + str(opts))
 
     def sysrpc_exit_code(self, func, args, sender):
         "Set hub exit code"

@@ -167,13 +167,17 @@ class Hub:
         if self.main_s:
             self.main_s.set_result(True)
 
-    def push_msg(self, name, msg):
+    def push_msg(self, name, msg = None, opts = None):
         "Push message to all queues"
 
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
-                    self.subs[subid].push_msg(subid, name, msg)
+                    nopts = {}
+                    if opts:
+                        nopts.update(opts)
+                    nopts["subid"] = subid
+                    self.subs[subid].push_msg(name, msg, opts)
             except Exception as e:
                 traceback.print_exc()
         self.logger.debug("Message " + str(name) + " " + str(msg))
@@ -182,6 +186,9 @@ class Hub:
         "Push broadcast pulse message"
 
         for a in self.working_agents:
-            a.push_msg(-1, "*/pulse", None)
+            a.push_msg("*/pulse", opts = {"ttl": 30})
 
+    def removed_msg(self, name, msg, opts):
+        # TODO: send events
+        pass
 

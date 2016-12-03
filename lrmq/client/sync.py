@@ -88,10 +88,10 @@ class AgentIO:
 
     getid_check = check_answer(getid, "getting ID")
 
-    def push_msg(self, name, msg):
+    def push_msg(self, name, msg, opts):
         "Push message to hib"
     
-        self.send_req({"cmd": "push", "name": name, "msg": msg})
+        self.send_req({"cmd": "push", "name": name, "msg": msg, "opts": opts})
         return self.recv_ans()
 
     push_msg_check = check_answer(push_msg, "push message")
@@ -168,10 +168,10 @@ class AgentIO:
             ans = self.wait_msg_check(block = True)
             self.msgs += ans.get("msg", [])
         while self.msgs:
-            subid, nsname, msg = self.msgs.pop(0)
-            self.process_msg(nsname, msg)
+            nsname, msg, opts = self.msgs.pop(0)
+            self.process_msg(nsname, msg, opts)
 
-    def process_msg(self, name, msg):
+    def process_msg(self, name, msg, opts):
         "Process one message"
     
         # get namespace
@@ -183,9 +183,9 @@ class AgentIO:
                 self.wait_ans[reqid] = msg
                 return
         if ns in self.msg_listeners:
-            return self.msg_listeners[ns](ns, name, msg)
+            return self.msg_listeners[ns](ns, name, msg, opts)
         if self.msg_def_listener:
-            return self.msg_def_listener(ns, name, msg)
+            return self.msg_def_listener(ns, name, msg, opts)
 
     def start_loop(self):
         "Main processing loop"
@@ -214,15 +214,15 @@ class AgentIO:
         
     call_check = check_answer(call, "call rpc")
 
-    def default_message(self, ns, name, msg):
+    def default_message(self, ns, name, msg, opts):
         "Default message handler"
 
         if ns == "*" and name == "pulse": return
         if ns == self.myid and name == "call": 
-            return self.default_rpc(ns, name, msg)
-        print("Unprocessed", ns, name, msg, file = sys.stderr)
+            return self.default_rpc(ns, name, msg, opts)
+        print("Unprocessed", ns, name, msg, opts, file = sys.stderr)
 
-    def default_rpc(self, ns, name, msg):
+    def default_rpc(self, ns, name, msg, opts):
         "Default RPC server handler"
     
         # process rpc
