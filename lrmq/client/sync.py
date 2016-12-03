@@ -217,7 +217,7 @@ class AgentIO:
     def default_message(self, ns, name, msg):
         "Default message handler"
 
-        if ns == "system" and name == "pulse": return
+        if ns == "*" and name == "pulse": return
         if ns == self.myid and name == "call": 
             return self.default_rpc(ns, name, msg)
         print("Unprocessed", ns, name, msg, file = sys.stderr)

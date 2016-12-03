@@ -179,9 +179,9 @@ class Hub:
         self.logger.debug("Message " + str(name) + " " + str(msg))
 
     def push_pulse(self):
-        "Push pulse message to all queues"
+        "Push broadcast pulse message"
 
         for a in self.working_agents:
-            a.push_msg(-1, "system/pulse", None)
+            a.push_msg(-1, "*/pulse", None)
 
 
