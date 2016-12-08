@@ -56,8 +56,8 @@ class AgentIOMaster(AgentIO):
         start_ext("server")
         start_ext("client")
     
-    def msg_self(self, ns, name, msg):
-        print("to master", name, msg, file = sys.stderr)
+    def msg_self(self, ns, name, msg, opts):
+        print("to master", name, msg, opts, file = sys.stderr)
         if name == "done_client":
             # shutdown server
             if self.serverid:
@@ -95,13 +95,13 @@ class AgentIOServer(AgentIO):
         self.push_msg_check(self.masterid + "/server", 
             {"serverid": self.myid})
     
-    def msg_self(self, ns, name, msg):
-        print("to server", name, msg, file = sys.stderr)
+    def msg_self(self, ns, name, msg, opts):
+        print("to server", name, msg, opts, file = sys.stderr)
         if name == "end":
             self.exit_check()
             self.end_loop()
             return
-        return self.default_rpc(ns, name, msg)
+        return self.default_rpc(ns, name, msg, opts)
         
         
     def rpc_testfunc(self, fn, args, reqid, sender):
@@ -117,10 +117,11 @@ class AgentIOClient(AgentIO):
         self.reg_callback(self.myid, self.msg_self)
         self.subscribe_check(self.myid + "/.*")
         # notify master
-        self.push_msg_check(self.masterid + "/client", {"clientid": self.myid})
+        self.push_msg_check(name = self.masterid + "/client", 
+            msg = {"clientid": self.myid})
     
-    def msg_self(self, ns, name, msg):
-        print("to client", name, msg, file = sys.stderr)
+    def msg_self(self, ns, name, msg, opts):
+        print("to client", name, msg, opts, file = sys.stderr)
         if name == "start":
             rpc = msg.get("rpc") # server rpc address
             print("RPC", rpc, file = sys.stderr)
@@ -130,6 +131,7 @@ class AgentIOClient(AgentIO):
             self.end_loop()
 
 class AgentIOTest(AgentIO):
+
     def loop(self):
         self.send_req({"cmd": "ping", "_pid": os.getpid()})
         self.recv_ans()            

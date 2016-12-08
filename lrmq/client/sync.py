@@ -88,7 +88,7 @@ class AgentIO:
 
     getid_check = check_answer(getid, "getting ID")
 
-    def push_msg(self, name, msg, opts):
+    def push_msg(self, name, msg = None, opts = None):
         "Push message to hib"
     
         self.send_req({"cmd": "push", "name": name, "msg": msg, "opts": opts})

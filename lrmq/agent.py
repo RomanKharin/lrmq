@@ -248,7 +248,7 @@ class Agent:
             now = datetime.datetime.now()
             while len(self.q):
                 name, msg, opts, until = self.q.pop(0)
-                if until <= now:
+                if until and until <= now:
                     # remove message
                     self.hub.removed_msg(name, msg, opts)
                     continue
