@@ -328,8 +328,8 @@ class AgentSystem(Agent):
             sender = msg.get("from")
             try:
                 if hasattr(self, "sysrpc_" + func):
-                    ret = getattr(self, "sysrpc_" + func)(func, 
-                        args, sender)
+                    ret = await (getattr(self, "sysrpc_" + func)(func, 
+                        args, sender))
                     ans = {"answer": "ok", "ret": ret}
                 else:
                     ans = {"answer": "error", "msg": "No function %s" % \
@@ -345,7 +345,7 @@ class AgentSystem(Agent):
         self.logger.debug("Unprocessed message to system " + \
             str(name) + " " + str(msg) + " " + str(opts))
 
-    def sysrpc_exit_code(self, func, args, sender):
+    async def sysrpc_exit_code(self, func, args, sender):
         "Set hub exit code"
     
         self.hub.logger.debug("Agent " + sender + " set exit code to " + \
