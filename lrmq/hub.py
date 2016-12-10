@@ -61,6 +61,7 @@ class Hub:
         self.stopped_agents = []
         self.id_cnt = 0 # numerate objects
         self.exit_code = 0
+        self.clean_cnt = 0
 
         self.main_s = None
         self.is_active = True
@@ -173,9 +174,7 @@ class Hub:
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
-                    nopts = {}
-                    if opts:
-                        nopts.update(opts)
+                    nopts = {} if opts else {k: v for k, v in opts.items()}
                     nopts["subid"] = subid
                     self.subs[subid].push_msg(name, msg, opts)
             except Exception as e:
@@ -183,12 +182,22 @@ class Hub:
         self.logger.debug("Message " + str(name) + " " + str(msg))
 
     def push_pulse(self):
-        "Push broadcast pulse message"
+        "Push broadcast pulse message. Update internal structures"
 
+        # send alive notifications
         for a in self.working_agents:
             a.push_msg("*/pulse", opts = {"ttl": 30})
 
-    def removed_msg(self, name, msg, opts):
+        # cleanup old messages from queues
+        self.clean_cnt += 1
+        if self.clean_cnt >= 12:
+            self.clean_cnt = 0
+            for a in self.working_agents:
+                a.check_msg_expiration()
+
+    def removed_msg(self, a, name, msg, opts):
         # TODO: send events
+        self.logger.debug("Message removed: " + str(name) + " " + str(msg) + \
+            " " + str(opts))
         pass
 

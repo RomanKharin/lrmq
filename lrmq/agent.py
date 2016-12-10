@@ -190,7 +190,8 @@ class Agent:
         if opts:
             ttl = opts.get("ttl")
             if ttl:
-                until = datetime.datetime.now() + datetime.timedelta(ttl)
+                until = datetime.datetime.now() + \
+                    datetime.timedelta(seconds = ttl)
         self.q.append((name, msg, opts, until))
         self.signal()
 
@@ -245,13 +246,8 @@ class Agent:
 
         def getpart():
             part = []
-            now = datetime.datetime.now()
             while len(self.q):
                 name, msg, opts, until = self.q.pop(0)
-                if until and until <= now:
-                    # remove message
-                    self.hub.removed_msg(name, msg, opts)
-                    continue
                 part.append((name, msg, opts))
                 if len(part) >= 10: break
             return part
@@ -281,6 +277,16 @@ class Agent:
         self.hub.push_msg(name = req.get("name"), msg = req.get("msg"), 
             opts = req.get("opts"))
         return {"answer": "ok"}
+
+    def check_msg_expiration(self):
+        "Check if messages expired"
+        
+        now = datetime.datetime.now()
+        # self.q: name, msg, opts, until
+        for x in self.q[:]:
+            if x[3] and x[3] <= now:
+                self.q.remove(x)
+                self.hub.removed_msg(self, x[0], x[1], x[2])
 
 class AgentSystem(Agent):
     "System namespace agent"
