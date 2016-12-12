@@ -229,6 +229,9 @@ class AgentIO:
         # process rpc
         if name != "call": return
 
+        msg = msg or {}
+        opts = opts or {}
+
         fn = msg.get("fn")
         args = msg.get("args")
         reqid = opts.get("reqid")
