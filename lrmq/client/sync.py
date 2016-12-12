@@ -231,8 +231,8 @@ class AgentIO:
 
         fn = msg.get("fn")
         args = msg.get("args")
-        reqid = msg.get("reqid")
-        sender = msg.get("from")
+        reqid = opts.get("reqid")
+        sender = opts.get("from")
         
         try:
             if fn in self.rpc_listeners:
@@ -246,8 +246,9 @@ class AgentIO:
         except Exception as e:
             traceback.print_exc(file = sys.stderr)
             msg = {"answer": "error", "msg": repr(e)}
-        msg["reqid"] = reqid
-        self.push_msg_check(sender + "/ret", msg)
+        opts = {"reqid": reqid, "from": sender}
+        self.push_msg_check(name = sender + "/ret", 
+            msg =msg, opts = opts)
 
     def send_signal(self):
         "Send signal to hub"
