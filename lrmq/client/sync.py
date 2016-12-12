@@ -204,8 +204,9 @@ class AgentIO:
         assert rpc, "RPC address can't be empty"
         reqid = self.reqid
         self.reqid += 1
-        self.push_msg_check(rpc + "/call", {"fn": fn, "args": args, 
-            "reqid": reqid, "from": self.myid})
+        self.push_msg_check(name = rpc + "/call", 
+            msg = {"fn": fn, "args": args}, 
+            opts = {"reqid": reqid, "from": self.myid, "check": "call"})
         self.wait_req[reqid] = (reqid, rpc, fn, args)
         while reqid not in self.wait_ans:
             self.process_msgs()
@@ -248,4 +249,9 @@ class AgentIO:
         msg["reqid"] = reqid
         self.push_msg_check(sender + "/ret", msg)
 
+    def send_signal(self):
+        "Send signal to hub"
+        
+        sys.stdout.buffer.write(b"\"-\"")
+        sys.stdout.buffer.flush()
 
