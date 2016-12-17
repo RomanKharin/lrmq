@@ -251,7 +251,7 @@ class AgentIO:
             msg = {"answer": "error", "msg": repr(e)}
         opts = {"reqid": reqid, "from": sender}
         self.push_msg_check(name = sender + "/ret", 
-            msg =msg, opts = opts)
+            msg = msg, opts = opts)
 
     def send_signal(self):
         "Send signal to hub"

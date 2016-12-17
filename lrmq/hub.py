@@ -62,6 +62,9 @@ class Hub:
         self.id_cnt = 0 # numerate objects
         self.exit_code = 0
         self.clean_cnt = 0
+        
+        # checks
+        self.call_wait = {}
 
         self.main_s = None
         self.is_active = True
@@ -171,6 +174,12 @@ class Hub:
     def push_msg(self, name, msg = None, opts = None):
         "Push message to all queues"
 
+        # check variants
+        check = opts.get("check") if opts else None
+        # TODO: check if not processed
+        if check:
+            assert isinstance(check, str), "Check must be string or None"
+
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
@@ -180,6 +189,26 @@ class Hub:
             except Exception as e:
                 traceback.print_exc()
         self.logger.debug("Message " + str(name) + " " + str(msg))
+
+        if check == "call":
+            opts = opts or {}
+            sender = opts.get("from")
+            assert sender, "Sender must be specified"
+            reqid = optd.get("reqid")
+            # call or return
+            if msg.endswith("/call"):
+                # start tracing by (caller, reqid) pair
+                sender = opts
+                self.call_wait[(sender, reqid)] = \
+                    (sedner, reqid, msg[:-5])
+            elif msg.endswith("/ret"):
+                waiter = self.call_wait.pop((sender, reqid), None)
+                if waiter is None:
+                    self.logger.debug("Message " + str(name) + \
+                        " nobody cares for answer")
+            else:
+                self.logger.debug("Message " + str(name) + \
+                    " misplaced call")
 
     def push_pulse(self):
         "Push broadcast pulse message. Update internal structures"
