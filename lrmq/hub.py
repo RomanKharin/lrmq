@@ -200,7 +200,7 @@ class Hub:
                 # start tracing by (caller, reqid) pair
                 sender = opts
                 self.call_wait[(sender, reqid)] = \
-                    (sedner, reqid, msg[:-5])
+                    (sedner, reqid, msg[:-5], datetime.datetime.now())
             elif msg.endswith("/ret"):
                 waiter = self.call_wait.pop((sender, reqid), None)
                 if waiter is None:
