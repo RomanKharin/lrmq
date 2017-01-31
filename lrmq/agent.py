@@ -252,7 +252,7 @@ class Agent:
                 if len(part) >= 10: break
             return part
         def answer(part):
-            return {"answer": "ok", "msg": part, "empty": len(self.q) == 0}
+            return {"answer": "ok", "msgs": part, "empty": len(self.q) == 0}
         q = getpart()
         if q:
             return answer(q) 

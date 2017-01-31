@@ -166,7 +166,7 @@ class AgentIO:
         
         if not self.msgs:
             ans = self.wait_msg_check(block = True)
-            self.msgs += ans.get("msg", [])
+            self.msgs += ans.get("msgs", [])
         while self.msgs:
             nsname, msg, opts = self.msgs.pop(0)
             self.process_msg(nsname, msg, opts)
