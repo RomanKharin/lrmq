@@ -176,16 +176,17 @@ class Hub:
 
         # check variants
         check = opts.get("check") if opts else None
-        # TODO: check if not processed
         if check:
             assert isinstance(check, str), "Check must be string or None"
 
+        msg_processed = False
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
                     nopts = {} if opts else {k: v for k, v in opts.items()}
                     nopts["subid"] = subid
                     self.subs[subid].push_msg(name, msg, opts)
+                    msg_processed = True
             except Exception as e:
                 traceback.print_exc()
         self.logger.debug("Message " + str(name) + " " + str(msg))
@@ -193,10 +194,13 @@ class Hub:
         if check == "call":
             opts = opts or {}
             sender = opts.get("from")
-            assert sender, "Sender must be specified"
+            if not sender:
+                raise Exception("Sender must be specified")
             reqid = optd.get("reqid")
             # call or return
             if msg.endswith("/call"):
+                if not msg_processed:
+                    raise Exception("RPC server not found")
                 # start tracing by (caller, reqid) pair
                 sender = opts
                 self.call_wait[(sender, reqid)] = \

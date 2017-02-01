@@ -75,6 +75,7 @@ class Agent:
             self.logger.debug("Selected protocol for " + self.name + ": " + \
                 sp.decode("utf-8"))
             self.select_protocol(Agent.protocols[sp])
+            return True
         else:
             self.isloop = False
             self.logger.debug("Lost agent channel " + self.name)
@@ -85,6 +86,7 @@ class Agent:
                 data = await self.readline()
                 if not data: break
                 sys.stdout.buffer.write(data)
+            return False
 
     def select_protocol(self, mixin):
         "Use mixin methods for exchange"
@@ -109,7 +111,7 @@ class Agent:
         self.send_agent_event("new")
 
         try:
-            await self.negotiate()
+            if not (await self.negotiate()): return
         except Exception as e:
             self.logger.exception("while negotiate")
             self.isloop = False
