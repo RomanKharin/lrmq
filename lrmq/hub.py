@@ -31,6 +31,7 @@ import json
 import struct
 import traceback
 import logging
+import datetime
 
 from .agent import AgentSystem, agent_factory
 
@@ -183,9 +184,9 @@ class Hub:
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
-                    nopts = {} if opts else {k: v for k, v in opts.items()}
+                    nopts = {} if not opts else {k: v for k, v in opts.items()}
                     nopts["subid"] = subid
-                    self.subs[subid].push_msg(name, msg, opts)
+                    self.subs[subid].push_msg(name, msg, nopts)
                     msg_processed = True
             except Exception as e:
                 traceback.print_exc()
@@ -196,16 +197,15 @@ class Hub:
             sender = opts.get("from")
             if not sender:
                 raise Exception("Sender must be specified")
-            reqid = optd.get("reqid")
+            reqid = opts.get("reqid")
             # call or return
-            if msg.endswith("/call"):
+            if name.endswith("/call"):
                 if not msg_processed:
                     raise Exception("RPC server not found")
                 # start tracing by (caller, reqid) pair
-                sender = opts
                 self.call_wait[(sender, reqid)] = \
-                    (sedner, reqid, msg[:-5], datetime.datetime.now())
-            elif msg.endswith("/ret"):
+                    (sender, reqid, name[:-5], datetime.datetime.now())
+            elif name.endswith("/ret"):
                 waiter = self.call_wait.pop((sender, reqid), None)
                 if waiter is None:
                     self.logger.debug("Message " + str(name) + \
