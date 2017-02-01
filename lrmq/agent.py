@@ -158,7 +158,14 @@ class Agent:
             if cid is not None:
                 ans["id"] = cid
             self.logger.debug("Write " + str(ans))
-            await self.send_answer(ans)
+            try:
+                await self.send_answer(ans)
+            except Exception as e:
+                self.logger.exception("sending answer")
+                self.hub.logger.debug("Lost agent while sending " + self.name)
+                self.send_agent_event("lost")
+                self.isloop = False
+                break
         recv_task.cancel()
         self.logger.debug("Finish agent " + self.name)
         self.hub.logger.debug("Finish agent " + self.name)
