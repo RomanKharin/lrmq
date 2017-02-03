@@ -9,7 +9,7 @@ class TestStartHub(unittest.TestCase):
         import subprocess
         # should enough for most cases
         interp = sys.argv[0].split(" ")[0]
-        subprocess.run([interp, "-m", "lrmq"])
+        subprocess.check_call([interp, "-m", "lrmq"])
 
     def test_module(self):
         lrmq.main({"_": None})
