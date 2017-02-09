@@ -2,8 +2,14 @@ import unittest
 
 import sys
 import lrmq
+import asyncio
 
 class TestStartHub(unittest.TestCase):
+
+    def setUp(self):
+        # reinitialize loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     def test_subprocess(self):
         import subprocess

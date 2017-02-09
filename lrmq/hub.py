@@ -28,6 +28,7 @@ import re
 import asyncio
 import time
 import json
+import pickle
 import struct
 import traceback
 import logging
@@ -54,6 +55,7 @@ class Hub:
         self.log_formatter = \
             logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         self.logger = logging.getLogger("<hub>")
+        self.log_handlers = set()
 
         # current agent list
         self.sysagent = AgentSystem(self)
@@ -72,6 +74,17 @@ class Hub:
 
     def load_config(self, cfg):
         self.cfg = cfg
+        # debug logger
+        if __debug__:
+            debuglogger = self.cfg.get("debuglogger", "INFO")
+            if debuglogger:
+                rootlogger = logging.getLogger("")
+                self.debughandler = DebugLoggerHandler(filename = debuglogger, 
+                    mode = "wb")
+                self.debughandler.setLevel(logging.DEBUG)
+                rootlogger.addHandler(self.debughandler)
+                self.log_handlers.add((rootlogger, self.debughandler))
+        
         loglevel = self.cfg.get("loglevel", "INFO")
         self.logger.setLevel(loglevel)
         logfn = self.cfg.get("log")
@@ -82,6 +95,7 @@ class Hub:
         if hdlr:
             hdlr.setFormatter(self.log_formatter)
             self.logger.addHandler(hdlr)
+            self.log_handlers.add((self.logger, hdlr))
         self.logger.debug("=" * 25)
 
         loadmode = cfg.get("load_mode", "config")
@@ -233,4 +247,35 @@ class Hub:
         self.logger.debug("Message removed: " + str(name) + " " + str(msg) + \
             " " + str(opts))
         pass
+
+    def cleanup(self):
+        # free used resources
+        for logger, hdlr in self.log_handlers:
+            try:
+                hdlr.flush()
+                hdlr.close()
+                logger.removeHandler(hdlr)
+            except:
+                traceback.print_exc()
+
+class DebugLoggerHandler(logging.FileHandler):
+    "Special debug logger"
+
+    def emit(self, record):
+        if self.stream is None:
+            self.stream = self._open()
+        fields = ("name", "asctime", "created", "levelname", "msg")
+        try:
+            data = {k: getattr(record, k) 
+                for k in fields if hasattr(record, k)}
+            if record.exc_info:
+                data["exc_info"] = repr(record.exc_info)
+            s = pickle.dumps(data)
+            slen = struct.pack(">L", len(s))
+            self.stream.write(slen + s)
+        except Exception:
+            self.handleError(record)
+
+    
+    
 

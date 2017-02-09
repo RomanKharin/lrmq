@@ -107,6 +107,8 @@ def main(cfg = None):
     finally:
         loop.close()
     
+    hub.cleanup()
+    
     return hub.exit_code
 
 
