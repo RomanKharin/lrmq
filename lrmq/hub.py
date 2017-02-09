@@ -35,6 +35,7 @@ import logging
 import datetime
 
 from .agent import AgentSystem, agent_factory
+from .logs import LogTypes as lg
 
 # Agent work scheme:
 #  propose protocols line
@@ -96,7 +97,7 @@ class Hub:
             hdlr.setFormatter(self.log_formatter)
             self.logger.addHandler(hdlr)
             self.log_handlers.add((self.logger, hdlr))
-        self.logger.debug("=" * 25)
+        self.logger.debug(lg.get(lg.MARK), extra = {"log_id": lg.MARK})
 
         loadmode = cfg.get("load_mode", "config")
         self.logger.debug("Load mode: " + str(loadmode))
