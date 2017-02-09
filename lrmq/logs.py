@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 # Low-resource message queue framework
-# Log types
+# Log helpers and types
 # Copyright (c) 2016 Roman Kharin <romiq.kh@gmail.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,14 +22,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from enum import Enum
+import logging
 
+class LogTypesFilter(logging.Filter):
+    "Filter translate id to text representation"
+
+    def filter(self, record):
+        try:
+            record.msg = LogTypes.text[record.msg]
+        except Exception as e:
+            print(e)
+            pass
+        return True
+        
 class LogTypes():
     MARK = 10
 
     # hub 100 - 1000
     HUB_LOAD_MODE = 100
-    
+    HUB_START = 101
+    HUB_FINISH = 102
     
     # agent 1000 -
     AGENT_ = 1000
@@ -39,6 +51,8 @@ class LogTypes():
         MARK: "=" * 25,
         
         HUB_LOAD_MODE: "Load mode %s",
+        HUB_START: "Start hub",
+        HUB_FINISH: "Finish",
         
         AGENT_: "Bulk message",
     

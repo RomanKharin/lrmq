@@ -35,7 +35,7 @@ import logging
 import datetime
 
 from .agent import AgentSystem, agent_factory
-from .logs import LogTypes as lg
+from .logs import LogTypes, LogTypesFilter
 
 # Agent work scheme:
 #  propose protocols line
@@ -55,7 +55,9 @@ class Hub:
         self.loop = asyncio.get_event_loop()
         self.log_formatter = \
             logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        self.log_filter = LogTypesFilter()
         self.logger = logging.getLogger("<hub>")
+        self.logger.addFilter(self.log_filter)
         self.log_handlers = set()
 
         # current agent list
@@ -97,8 +99,8 @@ class Hub:
             hdlr.setFormatter(self.log_formatter)
             self.logger.addHandler(hdlr)
             self.log_handlers.add((self.logger, hdlr))
-        self.logger.debug(lg.get(lg.MARK), extra = {"log_id": lg.MARK})
 
+        self.logger.debug(LogTypes.MARK)
         loadmode = cfg.get("load_mode", "config")
         self.logger.debug("Load mode: " + str(loadmode))
         if loadmode == "config_folder":
@@ -140,7 +142,7 @@ class Hub:
         del self.subs[oldsubid]
 
     async def main_loop(self):
-        self.logger.info("Start hub")
+        self.logger.info(LogTypes.HUB_START)
         self.main_s = self.loop.create_future()
         pending = [self.main_s]
         def process_agents(pending):
@@ -176,7 +178,7 @@ class Hub:
             # check if new agents
             cnt, pending = process_agents(pending)
             if cnt <= 1: break
-        self.logger.info("Finish")
+        self.logger.info(LogTypes.HUB_FINISH)
         # cleanup
         self.sysagent.isloop = False
         self.sysagent.signal()

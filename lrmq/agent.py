@@ -33,6 +33,8 @@ import types
 import traceback
 import datetime
 
+from .logs import LogTypes
+
 class Agent:
     "Base class for all agents"
 
@@ -55,6 +57,7 @@ class Agent:
         self.q_s = None
         self.subs = []
         self.logger = logging.getLogger("log_" + name)
+        self.logger.addFilter(self.hub.log_filter)
         self.ev_msg = {} # messages for events: prepare, new, lost, exit, error
 
     async def prepare(self):
