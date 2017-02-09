@@ -102,7 +102,7 @@ class Hub:
 
         self.logger.debug(LogTypes.MARK)
         loadmode = cfg.get("load_mode", "config")
-        self.logger.debug("Load mode: " + str(loadmode))
+        self.logger.debug(LogTypes.HUB_LOAD_MODE, loadmode)
         if loadmode == "config_folder":
             base = os.path.abspath(cfg.get("agents"))
             self.logger.debug("Load agents config files from: " + str(base))
@@ -267,7 +267,8 @@ class DebugLoggerHandler(logging.FileHandler):
     def emit(self, record):
         if self.stream is None:
             self.stream = self._open()
-        fields = ("name", "asctime", "created", "levelname", "msg")
+        fields = ("name", "asctime", "created", "levelname", "msg", 
+            "log_id", "args")
         try:
             data = {k: getattr(record, k) 
                 for k in fields if hasattr(record, k)}

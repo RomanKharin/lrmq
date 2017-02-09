@@ -29,9 +29,10 @@ class LogTypesFilter(logging.Filter):
 
     def filter(self, record):
         try:
-            record.msg = LogTypes.text[record.msg]
+            value = record.msg
+            record.msg = LogTypes.text[value]
+            record.log_id = value
         except Exception as e:
-            print(e)
             pass
         return True
         
@@ -53,6 +54,8 @@ class LogTypes():
         HUB_LOAD_MODE: "Load mode %s",
         HUB_START: "Start hub",
         HUB_FINISH: "Finish",
+        
+        
         
         AGENT_: "Bulk message",
     
