@@ -26,6 +26,7 @@ class TestSource(unittest.TestCase):
 
         loggers = ("debug", "info", "warning", "error", "critical")
         ptrn = re.compile("LogTypes\.(?P<name>.*?)[,\)]")
+        usedlt = set()
         def scan_file(fn, lineno):
             with open(fn, "r") as f:
                 # lineno - from 1, we use
@@ -64,7 +65,9 @@ class TestSource(unittest.TestCase):
                         cl = cl[pos + 1:]
                         m = ptrn.match(cl)
                         if m:
-                            self.assertIn(m.group("name"), logtypes)
+                            name = m.group("name")
+                            self.assertIn(name, logtypes)
+                            usedlt.add(name)
                         elif False:
                             raise Exception(
                                 "Logging not formatted %s:%d, %s" % (
@@ -101,7 +104,14 @@ class TestSource(unittest.TestCase):
             return items
             
         items = scan_all(lrmq.agent) + scan_all(lrmq.hub)
-            
+        
+        # check unused
+        unused = list(logtypes.keys())
+        for lt in usedlt:
+            unused.remove(lt)
+        for ui in unused:
+            raise Exception(
+                "Unused item LogTypes.%s (%d)" % (ui, logtypes[ui]))
 
 if __name__ == '__main__':
     unittest.main()

@@ -105,17 +105,17 @@ class Hub:
         self.logger.debug(LogTypes.HUB_LOAD_MODE, loadmode)
         if loadmode == "config_folder":
             base = os.path.abspath(cfg.get("agents"))
-            self.logger.debug("Load agents config files from: " + str(base))
+            self.logger.debug(LogTypes.HUB_LOAD_AGENTS, base)
             for item in os.listdir(base):
-                self.logger.debug("Load agent: " + str(item))
+                self.logger.debug(LogTypes.HUB_LOAD_AGENT, item)
                 if item.startswith("agent-") and item.endswith(".json"):
                     a = agent_factory(self, os.path.join(base, item))
                     self.pending_agents.append(a)
         elif loadmode == "config":
             a = cfg.get("agents", [])
-            self.logger.debug("Agents in config: " + str(len(a)))
+            self.logger.debug(LogTypes.HUB_AGENT_COUNT, len(a))
             for acfg in a:
-                self.logger.debug("Load agent: " + str(acfg))
+                self.logger.debug(LogTypes.HUB_LOAD_AGENT, str(acfg))
                 a = agent_factory(self, acfg)
                 self.pending_agents.append(a)
 
@@ -168,8 +168,7 @@ class Hub:
                 pending, timeout = 3,
                 return_when = asyncio.FIRST_COMPLETED)
             # check reason
-            self.logger.debug("Done loop done=" + str(len(done)) + \
-                " pending=" + str(len(pending)))
+            self.logger.info(LogTypes.HUB_LOOP_END, len(done), len(pending))
             pending = list(pending)
             if self.main_s.done():
                 # signal received
@@ -197,6 +196,9 @@ class Hub:
         if check:
             assert isinstance(check, str), "Check must be string or None"
 
+        self.logger.debug(LogTypes.HUB_MESSAGE, name, str(msg), str(opts),
+            extra = {"msg_name": name, "msg_msg": msg, "msg_opts": opts})
+
         msg_processed = False
         for mask, subid in self.subsmasks:
             try:
@@ -207,7 +209,6 @@ class Hub:
                     msg_processed = True
             except Exception as e:
                 traceback.print_exc()
-        self.logger.debug("Message " + str(name) + " " + str(msg))
 
         if check == "call":
             opts = opts or {}
@@ -225,11 +226,11 @@ class Hub:
             elif name.endswith("/ret"):
                 waiter = self.call_wait.pop((sender, reqid), None)
                 if waiter is None:
-                    self.logger.debug("Message " + str(name) + \
-                        " nobody cares for answer")
+                    # TODO: send events
+                    self.logger.debug(LogTypes.HUB_MESSAGE_NORET, name)
             else:
-                self.logger.debug("Message " + str(name) + \
-                    " misplaced call")
+                # TODO: send events
+                self.logger.debug(LogTypes.HUB_MESSAGE_BADCALL, name)
 
     def push_pulse(self):
         "Push broadcast pulse message. Update internal structures"
@@ -247,9 +248,8 @@ class Hub:
 
     def removed_msg(self, a, name, msg, opts):
         # TODO: send events
-        self.logger.debug("Message removed: " + str(name) + " " + str(msg) + \
-            " " + str(opts))
-        pass
+        self.logger.debug(LogTypes.HUB_MESSAGE_REMOVED, name, 
+            str(msg), str(opts))
 
     def cleanup(self):
         # free used resources

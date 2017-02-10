@@ -43,21 +43,37 @@ class LogTypes():
     HUB_LOAD_MODE = 100
     HUB_START = 101
     HUB_FINISH = 102
+    HUB_LOAD_AGENTS = 103
+    HUB_LOAD_AGENT = 104
+    HUB_AGENT_COUNT = 105
+    HUB_LOOP_END = 106
+
+    HUB_MESSAGE = 150
+    HUB_MESSAGE_NORET = 151
+    HUB_MESSAGE_BADCALL = 152
+    HUB_MESSAGE_REMOVED = 153
     
     # agent 1000 -
-    AGENT_ = 1000
+    #AGENT_ = 1000
     
     
     text = {
         MARK: "=" * 25,
         
-        HUB_LOAD_MODE: "Load mode %s",
+        HUB_LOAD_MODE: "Load mode '%s'",
         HUB_START: "Start hub",
         HUB_FINISH: "Finish",
+        HUB_LOAD_AGENTS: "Load agents config files from '%s'",
+        HUB_LOAD_AGENT: "Load agent '%s'",
+        HUB_AGENT_COUNT: "Agents in config: %d",
+        HUB_LOOP_END: "End loop: done=%d, pending=%d",
         
+        HUB_MESSAGE: "Message: '%s', msg=%s, opts=%s",
+        HUB_MESSAGE_NORET: "Message '%s' no one is listening for answer",
+        HUB_MESSAGE_BADCALL: "Message '%s' unknown call check type",
+        HUB_MESSAGE_REMOVED: "Message '%s' was removed, msg=%s, opts=%s",
         
-        
-        AGENT_: "Bulk message",
+        #AGENT_: "Bulk message",
     
     }
     @classmethod
