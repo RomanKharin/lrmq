@@ -434,7 +434,8 @@ class ProtoJsonNL():
 Agent.reg_protocol(b"jnl", ProtoJsonNL)
 
 class AgentStdIO(Agent):
-    "Agent connect to scheduler via stdin and stdout with 4b-json protocol"
+    "Agent connected to hub via stdin and stdout"
+    
     def __init__(self, hub, cfg):
         self.cfg = cfg
         self.name = cfg.get("name")
