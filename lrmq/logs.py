@@ -55,6 +55,10 @@ class LogTypes():
     
     # agent 1000 -
     #AGENT_ = 1000
+    AGENT_PREPARE = 1003
+    AGENT_SELECT_PROTO = 1005
+    AGENT_LOST_CHAN = 1006
+    
     
     
     text = {
@@ -74,6 +78,9 @@ class LogTypes():
         HUB_MESSAGE_REMOVED: "Message '%s' was removed, msg=%s, opts=%s",
         
         #AGENT_: "Bulk message",
+        AGENT_PREPARE: "Prepare agent '%s'",
+        AGENT_SELECT_PROTO: "Agent '%s' select protocol '%s'",
+        AGENT_LOST_CHAN: "Agent '%s' lost channel",
     
     }
     @classmethod

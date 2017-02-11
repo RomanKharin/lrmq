@@ -63,7 +63,7 @@ class Agent:
     async def prepare(self):
         "Prepare loop"
         
-        self.hub.logger.debug("Prepare agent " + self.name)
+        self.hub.logger.debug(LogTypes.AGENT_PREPARE, self.name)
         self.send_agent_event("prepare")
 
     async def negotiate(self):
@@ -75,14 +75,14 @@ class Agent:
         # read confirmation
         sp = (await self.readline()).strip()
         if sp:
-            self.logger.debug("Selected protocol for " + self.name + ": " + \
+            self.logger.debug(LogTypes.AGENT_SELECT_PROTO, self.name, 
                 sp.decode("utf-8"))
             self.select_protocol(Agent.protocols[sp])
             return True
         else:
             self.isloop = False
-            self.logger.debug("Lost agent channel " + self.name)
-            self.hub.logger.debug("Lost agent channel " + self.name)
+            self.logger.debug(LogTypes.AGENT_LOST_CHAN, self.name)
+            self.hub.logger.debug(LogTypes.AGENT_LOST_CHAN, self.name)
             self.send_agent_event("lost")
             # collect agent messages
             while True:

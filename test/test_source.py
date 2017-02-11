@@ -56,7 +56,10 @@ class TestSource(unittest.TestCase):
                             continue
                         #print("F", line)
                         pos = line.find("self.logger.")
-                        if pos < 0: continue
+                        if pos < 0: 
+                            pos = line.find("self.hub.logger.")
+                            if pos < 0:
+                                continue
                         cl = line[pos + 12:]
                         if not cl.startswith(loggers): 
                             continue
