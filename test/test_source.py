@@ -54,13 +54,20 @@ class TestSource(unittest.TestCase):
                         if line[:intend] != lines[0][:intend]: 
                             if line != "": break
                             continue
-                        #print("F", line)
-                        pos = line.find("self.logger.")
-                        if pos < 0: 
-                            pos = line.find("self.hub.logger.")
-                            if pos < 0:
-                                continue
-                        cl = line[pos + 12:]
+                        pos = -1
+                        for pt in ("self.logger.", "self.hub.logger."):
+                            pos = line.find(pt)
+                            if pos >= 0:
+                                cl = line[pos + len(pt):]
+                                break
+                        if pos < 0:
+                            # recheck unusual
+                            for l in loggers:
+                                pos = line.find(l + "(\"")
+                                if pos >= 0:
+                                    raise Exception("Unusual log statement %s:%d, %s" % (
+                                        fn, lineno + idx, line))
+                            continue
                         if not cl.startswith(loggers): 
                             continue
                         pos = cl.find("(")
