@@ -37,6 +37,7 @@ class TestRPC(unittest.TestCase):
             log_id = None
             if "log_id" in log:
                 if log["log_id"] == LogTypes.MARK: continue
+                print(log)
                 if skip > 0:
                     skip -= 1
                     continue
@@ -97,6 +98,7 @@ class TestRPC(unittest.TestCase):
             ["DEBUG", LogTypes.HUB_AGENT_COUNT, {"args": (1,)}],
             ["DEBUG", LogTypes.HUB_LOAD_AGENT, {}],
             ["INFO", LogTypes.HUB_START, {}],
+            ["DEBUG", LogTypes.AGENT_PREPARE, {"args": ("agent_dump",)}],
             ["DEBUG", LogTypes.HUB_MESSAGE, {"args": lambda x: 
                 check_msg_args(x, "prepare")}],
             ["DEBUG", LogTypes.HUB_MESSAGE, {"args": lambda x: 
