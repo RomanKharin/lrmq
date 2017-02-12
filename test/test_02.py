@@ -101,6 +101,7 @@ class TestRPC(unittest.TestCase):
             ["DEBUG", LogTypes.AGENT_PREPARE, {"args": ("agent_dump",)}],
             ["DEBUG", LogTypes.HUB_MESSAGE, {"args": lambda x: 
                 check_msg_args(x, "prepare")}],
+            ["INFO", LogTypes.AGENT_START, {}],
             ["ERROR", LogTypes.AGENT_EXC_PREPARE, {}],
             ["DEBUG", LogTypes.HUB_MESSAGE, {"args": lambda x: 
                 check_msg_args(x, "error")}],

@@ -79,7 +79,7 @@ class TestSource(unittest.TestCase):
                             name = m.group("name")
                             self.assertIn(name, logtypes)
                             usedlt.add(name)
-                        elif False:
+                        elif True:
                             raise Exception(
                                 "Logging not formatted %s:%d, %s" % (
                                 (fn, lineno + idx, line.strip())))

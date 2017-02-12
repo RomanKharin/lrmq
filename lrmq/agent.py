@@ -201,7 +201,7 @@ class Agent:
     def push_msg(self, name, msg = None, opts = None):
         "Push message to queue"
 
-        self.logger.debug("Message " + name + " " + str(msg) + " " + str(opts))
+        self.logger.debug(LogTypes.HUB_MESSAGE, name, str(msg), str(opts))
         until = None
         if opts:
             ttl = opts.get("ttl")
@@ -358,14 +358,13 @@ class AgentSystem(Agent):
             self.hub.push_msg(sender + "/ret", ans)
             return
 
-        self.logger.debug("Unprocessed message to system " + \
-            str(name) + " " + str(msg) + " " + str(opts))
+        self.logger.debug(LogTypes.AGENT_MSG_LOST, name, str(msg), 
+            str(opts))
 
     async def sysrpc_exit_code(self, func, args, sender):
         "Set hub exit code"
     
-        self.hub.logger.debug("Agent " + sender + " set exit code to " + \
-            repr(args))
+        self.hub.logger.debug(LogTypes.HUB_SET_EXIT_CODE, sender, repr(args))
         self.hub.exit_code = args
 
 class Proto4ByteJson():
@@ -456,7 +455,7 @@ class AgentStdIO(Agent):
         args = self.cfg.get("args")
         if args:
             cmd += args
-        self.hub.logger.info("Start agent " + str(cmd))
+        self.hub.logger.info(LogTypes.AGENT_START, cmd)
         self.proc = await asyncio.create_subprocess_exec(
             *cmd,
             stdout = asyncio.subprocess.PIPE,
@@ -469,8 +468,8 @@ class AgentStdIO(Agent):
         if hdlr:
             hdlr.setFormatter(self.hub.log_formatter)
             self.logger.addHandler(hdlr)
-        self.logger.debug("=" * 25)
-        self.logger.debug("Process created")
+        self.logger.debug(LogTypes.MARK)
+        self.logger.debug(LogTypes.AGENT_PROC_CREATED)
 
     async def recv(self, blen):
         return await self.proc.stdout.readexactly(blen)

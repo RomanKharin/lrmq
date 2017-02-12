@@ -48,13 +48,14 @@ class LogTypes():
     HUB_AGENT_COUNT = 105
     HUB_LOOP_END = 106
 
+    HUB_SET_EXIT_CODE = 125
+
     HUB_MESSAGE = 150
     HUB_MESSAGE_NORET = 151
     HUB_MESSAGE_BADCALL = 152
     HUB_MESSAGE_REMOVED = 153
     
     # agent 1000 -
-    #AGENT_ = 1000
     AGENT_PREPARE = 1003
     AGENT_SELECT_PROTO = 1005
     AGENT_LOST_CHAN = 1006
@@ -71,6 +72,9 @@ class LogTypes():
     AGENT_LOST_SEND = 1017
     AGENT_FINISH = 1018
     AGENT_UNSUBSCRIBE = 1019
+    AGENT_START = 1020
+    AGENT_PROC_CREATED = 1021
+    AGENT_MSG_LOST = 1022
     
     AGENT_EXC_PREPARE = 1100
     AGENT_EXC_NEGOTIATE = 1101
@@ -88,6 +92,8 @@ class LogTypes():
         HUB_LOAD_AGENT: "Load agent '%s'",
         HUB_AGENT_COUNT: "Agents in config: %d",
         HUB_LOOP_END: "End loop: done=%d, pending=%d",
+
+        HUB_SET_EXIT_CODE: "Agent '%s' set exit code '%s'",
         
         HUB_MESSAGE: "Message: '%s', msg=%s, opts=%s",
         HUB_MESSAGE_NORET: "Message '%s' no one is listening for answer",
@@ -111,6 +117,9 @@ class LogTypes():
         AGENT_LOST_SEND: "Agent '%s' lost while sending answer",
         AGENT_FINISH: "Agent '%s' finished",
         AGENT_UNSUBSCRIBE: "Agent '%s' unsubscribe from '%s'",
+        AGENT_START: "Start process '%s'",
+        AGENT_PROC_CREATED: "Process created",
+        AGENT_MSG_LOST: "System message lost: '%s', msg=%s, opts=%s",
         
         AGENT_EXC_PREPARE: "while preparing",
         AGENT_EXC_NEGOTIATE: "while negotiating",
