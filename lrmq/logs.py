@@ -59,9 +59,23 @@ class LogTypes():
     AGENT_SELECT_PROTO = 1005
     AGENT_LOST_CHAN = 1006
     AGENT_RUN = 1007
+    AGENT_SUBSCRIBE = 1008
+    AGENT_READ = 1009
+    AGENT_WRITE = 1010
+    AGENT_STREAM_END = 1011
+    AGENT_READ_ERROR = 1012
+    AGENT_GOT_SIGNAL = 1013
+    AGENT_REQ_NOT_DICT = 1014
+    AGENT_REQ_CMD_ERR = 1015
+    AGENT_LOST = 1016
+    AGENT_LOST_SEND = 1017
+    AGENT_FINISH = 1018
+    AGENT_UNSUBSCRIBE = 1019
     
     AGENT_EXC_PREPARE = 1100
     AGENT_EXC_NEGOTIATE = 1101
+    AGENT_EXC_LOOP = 1102
+    AGENT_EXC_SEND = 1103
     
     
     text = {
@@ -85,9 +99,23 @@ class LogTypes():
         AGENT_SELECT_PROTO: "Agent '%s' select protocol '%s'",
         AGENT_LOST_CHAN: "Agent '%s' lost channel",
         AGENT_RUN: "Agent '%s' run",
-    
+        AGENT_SUBSCRIBE: "Agent '%s' subscribe to '%s'",
+        AGENT_READ: "Read: %s",
+        AGENT_WRITE: "Write: %s",
+        AGENT_STREAM_END: "Agent '%s' end of stream",
+        AGENT_READ_ERROR: "Agent '%s' read error '%s'",
+        AGENT_GOT_SIGNAL: "Agent '%s' got signal",
+        AGENT_REQ_NOT_DICT: "Request error: not a dictionary",
+        AGENT_REQ_CMD_ERR: "Request error: command is not string",
+        AGENT_LOST: "Agent '%s' lost",
+        AGENT_LOST_SEND: "Agent '%s' lost while sending answer",
+        AGENT_FINISH: "Agent '%s' finished",
+        AGENT_UNSUBSCRIBE: "Agent '%s' unsubscribe from '%s'",
+        
         AGENT_EXC_PREPARE: "while preparing",
         AGENT_EXC_NEGOTIATE: "while negotiating",
+        AGENT_EXC_LOOP: "in command loop",
+        AGENT_EXC_SEND: "sending answer",
     
     }
     @classmethod

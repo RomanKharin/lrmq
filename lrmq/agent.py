@@ -126,22 +126,24 @@ class Agent:
             while self.isloop:
                 try:
                     req = await self.recv_request()
-                    self.logger.debug("Read " + str(req))
+                    self.logger.debug(LogTypes.AGENT_READ, req, 
+                        extra = {"req": req})
                 except asyncio.CancelledError as e:
-                    self.logger.debug("End stream for " + self.name)
+                    self.logger.debug(LogTypes.AGENT_STREAM_END, self.name)
                     break
                 except Exception as e:
-                    self.logger.error("Read error " + traceback.format_exc())
+                    self.logger.error(LogTypes.AGENT_READ_ERROR, self.name,
+                        traceback.format_exc(), exc_info = True)
                     req = {"cmd": "!", "msg": repr(e)}
                 if req == "-": 
-                    self.logger.debug("Signal for " + self.name)
+                    self.logger.debug(LogTypes.AGENT_GOT_SIGNAL, self.name)
                     self.signal()
                     continue
                 if not isinstance(req, dict):
-                    self.logger.error("Reuest error: not a dict")
-                    req = {"cmd": "!", "msg": "Bad command request"}
+                    self.logger.error(LogTypes.AGENT_REQ_NOT_DICT)
+                    req = {"cmd": "!", "msg": "Bad command format"}
                 if not isinstance(req.get("cmd"), str):
-                    self.logger.error("Reuest error: command is not string")
+                    self.logger.error(LogTypes.AGENT_REQ_CMD_ERR)
                     req = {"cmd": "!", "msg": "Bad command request"}
                 await cmd_recv.put(req)
         recv_task = asyncio.ensure_future(receiver())
@@ -149,33 +151,35 @@ class Agent:
             req = await cmd_recv.get()
             if not req:
                 # stream lost
-                self.logger.debug("Lost agent " + self.name)
-                self.hub.logger.debug("Lost agent " + self.name)
+                self.logger.debug(LogTypes.AGENT_LOST, self.name)
+                self.hub.logger.debug(LogTypes.AGENT_LOST, self.name)
                 self.send_agent_event("lost")
                 self.isloop = False
                 break
             try:
                 ans = await self.make_answer(req)
             except Exception as e:
-                self.logger.exception("in agent loop")
+                self.logger.exception(LogTypes.AGENT_EXC_LOOP)
                 ans = {"answer": "error", "msg": repr(e)}
             cid = req.get("id")
             if cid is not None:
                 ans["id"] = cid
-            self.logger.debug("Write " + str(ans))
+            self.logger.debug(LogTypes.AGENT_WRITE, ans, 
+                extra = {"ans": ans})
             try:
                 await self.send_answer(ans)
             except Exception as e:
-                self.logger.exception("sending answer")
-                self.hub.logger.debug("Lost agent while sending " + self.name)
+                self.logger.exception(LogTypes.AGENT_EXC_SEND)
+                self.hub.logger.debug(LogTypes.AGENT_LOST_SEND, self.name)
+                self.logger.debug(LogTypes.AGENT_LOST_SEND, self.name)
                 self.send_agent_event("lost")
                 self.isloop = False
                 break
         recv_task.cancel()
-        self.logger.debug("Finish agent " + self.name)
-        self.hub.logger.debug("Finish agent " + self.name)
+        self.hub.logger.debug(LogTypes.AGENT_FINISH, self.name)
+        self.logger.debug(LogTypes.AGENT_FINISH, self.name)
         for subid in self.subs:
-            self.logger.debug("Unsubscribe " + str(subid))
+            self.logger.debug(LogTypes.AGENT_UNSUBSCRIBE, self.name, subid)
             self.hub.unsubscribe(subid)
         self.send_agent_event("exit")
         await self.finish()
@@ -248,7 +252,7 @@ class Agent:
             mask = re.compile(req.get("mask"))
             subid = self.hub.subscribe(mask = mask, subscriber = self)
             self.subs.append(subid)
-            self.logger.debug("Subscribe " + str(subid))
+            self.logger.debug(LogTypes.AGENT_SUBSCRIBE, self.name, subid)
             return {"answer": "ok", "subid": subid}
         except Exception as e:
             return {"answer": "error", "msg": str(e)}
