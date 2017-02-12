@@ -104,19 +104,19 @@ class Agent:
         try:
             await self.prepare()
         except Exception as e:
-            self.logger.exception("while preparing")
+            self.logger.exception(LogTypes.AGENT_EXC_PREPARE)
             self.isloop = False
             self.send_agent_event("error")
             return
 
         # report event
-        self.logger.debug("Run agent " + self.name)
+        self.logger.debug(LogTypes.AGENT_RUN, self.name)
         self.send_agent_event("new")
 
         try:
             if not (await self.negotiate()): return
         except Exception as e:
-            self.logger.exception("while negotiate")
+            self.logger.exception(LogTypes.AGENT_EXC_NEGOTIATE)
             self.isloop = False
             self.send_agent_event("error")
             return

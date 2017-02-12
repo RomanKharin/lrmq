@@ -24,7 +24,8 @@ class TestSource(unittest.TestCase):
             self.assertIn(lt, lrmq.logs.LogTypes.text, 
                 "Message for %s (%d) not found" % (ltname, lt))
 
-        loggers = ("debug", "info", "warning", "error", "critical")
+        loggers = ("debug", "info", "warning", "error", "critical", 
+            "exception")
         ptrn = re.compile("LogTypes\.(?P<name>.*?)[,\)]")
         usedlt = set()
         def scan_file(fn, lineno):
@@ -65,8 +66,8 @@ class TestSource(unittest.TestCase):
                             for l in loggers:
                                 pos = line.find(l + "(\"")
                                 if pos >= 0:
-                                    raise Exception("Unusual log statement %s:%d, %s" % (
-                                        fn, lineno + idx, line))
+                                    raise Exception("Unusual log statement "\
+                                        "%s:%d, %s" % (fn, lineno + idx, line))
                             continue
                         if not cl.startswith(loggers): 
                             continue

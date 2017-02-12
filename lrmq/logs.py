@@ -58,7 +58,10 @@ class LogTypes():
     AGENT_PREPARE = 1003
     AGENT_SELECT_PROTO = 1005
     AGENT_LOST_CHAN = 1006
+    AGENT_RUN = 1007
     
+    AGENT_EXC_PREPARE = 1100
+    AGENT_EXC_NEGOTIATE = 1101
     
     
     text = {
@@ -81,6 +84,10 @@ class LogTypes():
         AGENT_PREPARE: "Prepare agent '%s'",
         AGENT_SELECT_PROTO: "Agent '%s' select protocol '%s'",
         AGENT_LOST_CHAN: "Agent '%s' lost channel",
+        AGENT_RUN: "Agent '%s' run",
+    
+        AGENT_EXC_PREPARE: "while preparing",
+        AGENT_EXC_NEGOTIATE: "while negotiating",
     
     }
     @classmethod
