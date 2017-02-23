@@ -49,16 +49,18 @@ class Agent:
         if name is None:
             name = hub.genid("agent")
         self.name = name
-        # requester mode: 0 - normal, 1 - event subscription
-        #self.isdone = asyncio.futures.Future()
         self.isloop = True
         # messages
         self.q = []
         self.q_s = None
         self.subs = []
+        # logger
         self.logger = logging.getLogger("log_" + name)
         self.logger.addFilter(self.hub.log_filter)
+        # events
         self.ev_msg = {} # messages for events: prepare, new, lost, exit, error
+        # rpc
+        self.isrpc = False
 
     async def prepare(self):
         "Prepare loop"
@@ -445,6 +447,7 @@ class AgentStdIO(Agent):
         super().__init__(hub, self.name)
         self.aid = cfg.get("id", self.cfg.get("cmd", ""))
         self.ev_msg = {k: v for k, v in cfg.get("events", {}).items()}
+        self.isrpc = bool(cfg.get("rpc"))
         self.proc = None
 
     async def prepare(self):

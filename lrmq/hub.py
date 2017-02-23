@@ -200,6 +200,7 @@ class Hub:
             extra = {"msg_name": name, "msg_msg": msg, "msg_opts": opts})
 
         msg_processed = False
+        msg_rpc = False
         for mask, subid in self.subsmasks:
             try:
                 if mask.match(name):
@@ -207,6 +208,8 @@ class Hub:
                     nopts["subid"] = subid
                     self.subs[subid].push_msg(name, msg, nopts)
                     msg_processed = True
+                    if self.subs[subid].isrpc:
+                        msg_rpc = True
             except Exception as e:
                 traceback.print_exc()
 
@@ -218,7 +221,7 @@ class Hub:
             reqid = opts.get("reqid")
             # call or return
             if name.endswith("/call"):
-                if not msg_processed:
+                if not msg_rpc:
                     raise Exception("RPC server not found")
                 # start tracing by (caller, reqid) pair
                 self.call_wait[(sender, reqid)] = \
@@ -231,7 +234,13 @@ class Hub:
             else:
                 # TODO: send events
                 self.logger.debug(LogTypes.HUB_MESSAGE_BADCALL, name)
-
+        else:
+            if msg_processed:
+                # TODO: send events
+                self.logger.debug(LogTypes.AGENT_MSG_UNPROCESSED, name, 
+                    str(msg), str(opts))
+                
+        
     def push_pulse(self):
         "Push broadcast pulse message. Update internal structures"
 
@@ -250,7 +259,7 @@ class Hub:
         self.logger.debug(LogTypes.HUB_MESSAGE_REMOVED, name, 
             str(msg), str(opts))
         if name != "*/pulse" and not name.starts_with("system/msg_lost/"):
-            self.push_msg("system/msg_lost/", {"name": name,
+            self.push_msg("system/msg_lost/" + a.name, {"name": name,
                 "msg": msg, "opts": opts, "agentid": a.getid()})
 
     def cleanup(self):

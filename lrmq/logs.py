@@ -75,6 +75,7 @@ class LogTypes():
     AGENT_START = 1020
     AGENT_PROC_CREATED = 1021
     AGENT_MSG_LOST = 1022
+    AGENT_MSG_UNPROCESSED = 1023
     
     AGENT_EXC_PREPARE = 1100
     AGENT_EXC_NEGOTIATE = 1101
@@ -120,6 +121,7 @@ class LogTypes():
         AGENT_START: "Start process '%s'",
         AGENT_PROC_CREATED: "Process created",
         AGENT_MSG_LOST: "System message lost: '%s', msg=%s, opts=%s",
+        AGENT_MSG_UNPROCESSED: "Message not processed: '%s', msg=%s, opts=%s",
         
         AGENT_EXC_PREPARE: "while preparing",
         AGENT_EXC_NEGOTIATE: "while negotiating",
