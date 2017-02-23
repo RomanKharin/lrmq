@@ -247,9 +247,11 @@ class Hub:
                 a.check_msg_expiration()
 
     def removed_msg(self, a, name, msg, opts):
-        # TODO: send events
         self.logger.debug(LogTypes.HUB_MESSAGE_REMOVED, name, 
             str(msg), str(opts))
+        if name != "*/pulse" and not name.starts_with("system/msg_lost/"):
+            self.push_msg("system/msg_lost/", {"name": name,
+                "msg": msg, "opts": opts, "agentid": a.getid()})
 
     def cleanup(self):
         # free used resources
