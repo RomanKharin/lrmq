@@ -188,7 +188,7 @@ class Hub:
         if self.main_s:
             self.main_s.set_result(True)
 
-    def push_msg(self, name, msg = None, opts = None):
+    def push_msg(self, sender, name, msg = None, opts = None):
         "Push message to all queues"
 
         # check variants
@@ -246,7 +246,7 @@ class Hub:
 
         # send alive notifications
         for a in self.working_agents:
-            a.push_msg("*/pulse", opts = {"ttl": 30})
+            a.push_msg(None, "*/pulse", opts = {"ttl": 30})
 
         # cleanup old messages from queues
         self.clean_cnt += 1
@@ -259,7 +259,7 @@ class Hub:
         self.logger.debug(LogTypes.HUB_MESSAGE_REMOVED, name, 
             str(msg), str(opts))
         if name != "*/pulse" and not name.starts_with("system/msg_lost/"):
-            self.push_msg("system/msg_lost/" + a.name, {"name": name,
+            self.push_msg(None, "system/msg_lost/" + a.name, {"name": name,
                 "msg": msg, "opts": opts, "agentid": a.getid()})
 
     def cleanup(self):

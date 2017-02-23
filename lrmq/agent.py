@@ -188,10 +188,10 @@ class Agent:
 
     def send_agent_event(self, ev):
         aid = self.getid()
-        self.hub.push_msg("system/" + ev + "_agent/" + self.name, 
+        self.hub.push_msg(None, "system/" + ev + "_agent/" + self.name, 
             {"agentid": aid})
         if ev in self.ev_msg:
-            self.hub.push_msg(self.ev_msg[ev], 
+            self.hub.push_msg(None, self.ev_msg[ev], 
                 {"agentid": aid, 
                 "name": self.name,
                 "event": ev})
@@ -292,7 +292,7 @@ class Agent:
         return {"answer": "ok"}
 
     async def cmd_push(self, req):
-        self.hub.push_msg(name = req.get("name"), msg = req.get("msg"), 
+        self.hub.push_msg(self, name = req.get("name"), msg = req.get("msg"), 
             opts = req.get("opts"))
         return {"answer": "ok"}
 
@@ -357,7 +357,7 @@ class AgentSystem(Agent):
                 ans = {"answer": "error", "msg": repr(e)}
             if reqid is not None:
                 ans["reqid"] = reqid
-            self.hub.push_msg(sender + "/ret", ans)
+            self.hub.push_msg(self, sender + "/ret", ans)
             return
 
         self.logger.debug(LogTypes.AGENT_MSG_LOST, name, str(msg), 
