@@ -187,7 +187,7 @@ class Agent:
         self.send_agent_event("exit")
         await self.finish()
 
-    def send_agent_event(self, ev, extra = None}):
+    def send_agent_event(self, ev, extra = None):
         aid = self.getid()
         msg = extra or {}
         msg["agentid"] = aid
