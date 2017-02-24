@@ -58,7 +58,8 @@ class Agent:
         self.logger = logging.getLogger("log_" + name)
         self.logger.addFilter(self.hub.log_filter)
         # events
-        self.ev_msg = {} # messages for events: prepare, new, lost, exit, error
+        self.ev_msg = {} # messages for events: 
+        #                  prepare, new, lost, exit, error, msg_lost
         # rpc
         self.isrpc = False
 
@@ -186,15 +187,15 @@ class Agent:
         self.send_agent_event("exit")
         await self.finish()
 
-    def send_agent_event(self, ev):
+    def send_agent_event(self, ev, extra = None}):
         aid = self.getid()
-        self.hub.push_msg(None, "system/" + ev + "_agent/" + self.name, 
-            {"agentid": aid})
+        msg = extra or {}
+        msg["agentid"] = aid
+        msg["name"] = self.name
+        msg["event"] = ev
+        self.hub.push_msg(None, "system/" + ev + "_agent/" + self.name, msg)
         if ev in self.ev_msg:
-            self.hub.push_msg(None, self.ev_msg[ev], 
-                {"agentid": aid, 
-                "name": self.name,
-                "event": ev})
+            self.hub.push_msg(None, self.ev_msg[ev], msg)
 
     def signal(self, result = True):
         if self.q_s is not None:
@@ -304,7 +305,7 @@ class Agent:
         for x in self.q[:]:
             if x[3] and x[3] <= now:
                 self.q.remove(x)
-                self.hub.removed_msg(self, x[0], x[1], x[2])
+                self.hub.removed_msg(self, "timeout", x[0], x[1], x[2])
 
 class AgentSystem(Agent):
     "System namespace agent"

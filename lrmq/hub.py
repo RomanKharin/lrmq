@@ -206,10 +206,11 @@ class Hub:
                 if mask.match(name):
                     nopts = {} if not opts else {k: v for k, v in opts.items()}
                     nopts["subid"] = subid
-                    self.subs[subid].push_msg(name, msg, nopts)
-                    msg_processed = True
-                    if self.subs[subid].isrpc:
-                        msg_rpc = True
+                    if self.subs[subid].isloop:
+                        self.subs[subid].push_msg(name, msg, nopts)
+                        msg_processed = True
+                        if self.subs[subid].isrpc:
+                            msg_rpc = True
             except Exception as e:
                 traceback.print_exc()
 
@@ -255,12 +256,13 @@ class Hub:
             for a in self.working_agents:
                 a.check_msg_expiration()
 
-    def removed_msg(self, a, name, msg, opts):
+    def removed_msg(self, a, reason, name, msg, opts):
         self.logger.debug(LogTypes.HUB_MESSAGE_REMOVED, name, 
             str(msg), str(opts))
         if name != "*/pulse" and not name.starts_with("system/msg_lost/"):
-            self.push_msg(None, "system/msg_lost/" + a.name, {"name": name,
-                "msg": msg, "opts": opts, "agentid": a.getid()})
+            if a:
+                a.send_agent_event("msg_lost", {"msg": {"name": name,
+                "msg": msg, "opts": opts}))
 
     def cleanup(self):
         # free used resources
