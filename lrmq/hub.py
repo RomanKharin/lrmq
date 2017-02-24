@@ -262,7 +262,7 @@ class Hub:
         if name != "*/pulse" and not name.starts_with("system/msg_lost/"):
             if a:
                 a.send_agent_event("msg_lost", {"msg": {"name": name,
-                "msg": msg, "opts": opts}))
+                "msg": msg, "opts": opts, "reason": reason}))
 
     def cleanup(self):
         # free used resources
