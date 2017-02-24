@@ -54,6 +54,7 @@ class LogTypes():
     HUB_MESSAGE_NORET = 151
     HUB_MESSAGE_BADCALL = 152
     HUB_MESSAGE_REMOVED = 153
+    AGENT_MSG_UNPROCESSED = 154
     
     # agent 1000 -
     AGENT_PREPARE = 1003
@@ -75,7 +76,6 @@ class LogTypes():
     AGENT_START = 1020
     AGENT_PROC_CREATED = 1021
     AGENT_MSG_LOST = 1022
-    AGENT_MSG_UNPROCESSED = 1023
     
     AGENT_EXC_PREPARE = 1100
     AGENT_EXC_NEGOTIATE = 1101
@@ -100,6 +100,7 @@ class LogTypes():
         HUB_MESSAGE_NORET: "Message '%s' no one is listening for answer",
         HUB_MESSAGE_BADCALL: "Message '%s' unknown call check type",
         HUB_MESSAGE_REMOVED: "Message '%s' was removed, msg=%s, opts=%s",
+        HUB_MSG_UNPROCESSED: "Message not processed: '%s', msg=%s, opts=%s",
         
         #AGENT_: "Bulk message",
         AGENT_PREPARE: "Prepare agent '%s'",
@@ -121,7 +122,6 @@ class LogTypes():
         AGENT_START: "Start process '%s'",
         AGENT_PROC_CREATED: "Process created",
         AGENT_MSG_LOST: "System message lost: '%s', msg=%s, opts=%s",
-        AGENT_MSG_UNPROCESSED: "Message not processed: '%s', msg=%s, opts=%s",
         
         AGENT_EXC_PREPARE: "while preparing",
         AGENT_EXC_NEGOTIATE: "while negotiating",

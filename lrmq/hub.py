@@ -215,7 +215,7 @@ class Hub:
 
         if check == "call":
             opts = opts or {}
-            sender = opts.get("from")
+            from_agent = opts.get("from")
             if not sender:
                 raise Exception("Sender must be specified")
             reqid = opts.get("reqid")
@@ -224,21 +224,21 @@ class Hub:
                 if not msg_rpc:
                     raise Exception("RPC server not found")
                 # start tracing by (caller, reqid) pair
-                self.call_wait[(sender, reqid)] = \
-                    (sender, reqid, name[:-5], datetime.datetime.now())
+                self.call_wait[(from_agent, reqid)] = \
+                    (from_agent, reqid, name[:-5], datetime.datetime.now())
             elif name.endswith("/ret"):
-                waiter = self.call_wait.pop((sender, reqid), None)
-                if waiter is None:
-                    # TODO: send events
+                waiter = self.call_wait.pop((from_agent, reqid), None)
+                if waiter is None or not msg_processed:
                     self.logger.debug(LogTypes.HUB_MESSAGE_NORET, name)
+                    raise Exception("Answer was not received")
             else:
-                # TODO: send events
                 self.logger.debug(LogTypes.HUB_MESSAGE_BADCALL, name)
+                raise Exception("Unknown RPC message type '%s'" % name)
         else:
             if msg_processed:
-                # TODO: send events
-                self.logger.debug(LogTypes.AGENT_MSG_UNPROCESSED, name, 
+                self.logger.debug(LogTypes.HUB_MSG_UNPROCESSED, name, 
                     str(msg), str(opts))
+                raise Exception("Message was not processed")
                 
         
     def push_pulse(self):
